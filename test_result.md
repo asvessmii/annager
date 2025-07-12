@@ -119,6 +119,9 @@ backend:
       - working: true
         agent: "main"
         comment: "Добавлена функция clean_duplicate_buttons() и исправлена populate_initial_messages() для предотвращения дублирования. Дублирующиеся кнопки удалены из БД"
+      - working: true
+        agent: "testing"
+        comment: "✅ ПРОТЕСТИРОВАНО: Дублирующиеся кнопки отсутствуют в БД. Функция clean_duplicate_buttons() работает корректно. Исправлена синтаксическая ошибка в bot.py (неэкранированные кавычки в RESULTS)"
 
   - task: "Исправить логику отображения прогресса пользователей в админке"
     implemented: true
@@ -134,6 +137,9 @@ backend:
       - working: true
         agent: "main"
         comment: "Добавлены поля completed и last_result в таблицу users. Переписана функция admin_users() для корректного отображения статуса тестов. Добавлена функция complete_user_test()"
+      - working: true
+        agent: "testing"
+        comment: "✅ ПРОТЕСТИРОВАНО: Поля completed и last_result добавлены в таблицу users. Функция complete_user_test() корректно помечает тест как завершенный. Логика отображения прогресса в admin_users() работает правильно"
 
   - task: "Расширить админку - управление сообщениями"
     implemented: true
@@ -141,7 +147,7 @@ backend:
     file: "bot.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
@@ -149,6 +155,9 @@ backend:
       - working: true
         agent: "main"
         comment: "Переписана админка с новым дизайном и эмодзи. Добавлены функции для добавления/удаления сообщений. Создана структурированная навигация"
+      - working: true
+        agent: "testing"
+        comment: "✅ ПРОТЕСТИРОВАНО: Функции admin_messages, admin_edit_message, receive_edited_message_text работают корректно. CRUD операции для сообщений (add_message, update_message_text, delete_message, get_all_messages) протестированы и функционируют правильно"
 
   - task: "Расширить админку - управление кнопками"
     implemented: true
@@ -156,7 +165,7 @@ backend:
     file: "bot.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
@@ -164,6 +173,9 @@ backend:
       - working: true
         agent: "main"
         comment: "Добавлена секция admin_buttons для полного управления кнопками с просмотром всех параметров"
+      - working: true
+        agent: "testing"
+        comment: "✅ ПРОТЕСТИРОВАНО: Функция admin_buttons работает корректно. CRUD операции для кнопок (add_button, update_button, delete_button, get_all_buttons, get_button_by_id) протестированы и функционируют правильно"
 
   - task: "Расширить админку - управление тестами"
     implemented: true
@@ -171,7 +183,7 @@ backend:
     file: "bot.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
@@ -179,6 +191,9 @@ backend:
       - working: true
         agent: "main"
         comment: "Добавлена секция admin_tests с отображением всех вопросов и результатов тестов"
+      - working: true
+        agent: "testing"
+        comment: "✅ ПРОТЕСТИРОВАНО: Функция admin_tests работает корректно. Константы QUESTIONS и RESULTS имеют правильную структуру. Админ-панель имеет все необходимые функции навигации"
 
 metadata:
   created_by: "main_agent"
