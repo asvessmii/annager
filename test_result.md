@@ -101,3 +101,84 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: "Работаем с Telegram ботом Annaager. Проблемы: дублирование функциональных кнопок (проверка подписки, подписаться на канал, пройти тест), нужно переработать админку - добавить возможность добавлять/редактировать/удалять текст, кнопки, тесты, разделить по понятным блокам, исправить проблему с отображением прогресса пользователей в тестах"
+
+backend:
+  - task: "Исправить дублирование кнопок в базе данных"
+    implemented: false
+    working: "NA"
+    file: "db.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Обнаружено дублирование кнопок в таблице buttons (ID: 1,4 - одинаковые кнопки подписки, ID: 2,5 - одинаковые кнопки проверки, ID: 3,6 - одинаковые кнопки теста)"
+
+  - task: "Исправить логику отображения прогресса пользователей в админке"
+    implemented: false
+    working: false
+    file: "bot.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "main"
+        comment: "В функции admin_users() неправильная логика проверки пройденного теста"
+
+  - task: "Расширить админку - управление сообщениями"
+    implemented: false
+    working: "NA"
+    file: "bot.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Нужно добавить функции добавления/удаления сообщений, а не только редактирования"
+
+  - task: "Расширить админку - управление кнопками"
+    implemented: false
+    working: "NA"
+    file: "bot.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Нужно добавить функции добавления/редактирования/удаления кнопок"
+
+  - task: "Расширить админку - управление тестами"
+    implemented: false
+    working: "NA"
+    file: "bot.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Нужно добавить функции редактирования вопросов теста и вариантов ответов"
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 0
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "Исправить дублирование кнопок в базе данных"
+    - "Исправить логику отображения прогресса пользователей в админке"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+  - agent: "main"
+    message: "Проанализировал текущее состояние Telegram бота. Обнаружил дублирование кнопок в БД и проблемы с админкой. Начинаю исправления с высокоприоритетных задач."
