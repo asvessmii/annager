@@ -354,16 +354,42 @@ def test_clean_duplicate_buttons_function():
     db.DATABASE_NAME = temp_db
     
     try:
-        db.init_db()
-        
-        # Add a message
-        db.add_message("test_msg", "Test message", None)
-        
-        # Add duplicate buttons manually
+        # Initialize database without populate_initial_messages
         conn = sqlite3.connect(temp_db)
         cursor = conn.cursor()
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY,
+                current_question INTEGER DEFAULT 0,
+                score INTEGER DEFAULT 0,
+                completed INTEGER DEFAULT 0,
+                last_result TEXT
+            )
+        """)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS messages (
+                message_id TEXT PRIMARY KEY,
+                text TEXT,
+                photo_path TEXT
+            )
+        """)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS buttons (
+                button_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                message_id TEXT,
+                text TEXT,
+                url TEXT,
+                callback_data TEXT,
+                FOREIGN KEY (message_id) REFERENCES messages (message_id)
+            )
+        """)
+        conn.commit()
         
-        # Insert duplicate buttons
+        # Add a message
+        cursor.execute("INSERT INTO messages (message_id, text, photo_path) VALUES (?, ?, ?)", 
+                      ("test_msg", "Test message", None))
+        
+        # Insert duplicate buttons manually
         cursor.execute("INSERT INTO buttons (message_id, text, url, callback_data) VALUES (?, ?, ?, ?)", 
                       ("test_msg", "Duplicate Button", "https://example.com", None))
         cursor.execute("INSERT INTO buttons (message_id, text, url, callback_data) VALUES (?, ?, ?, ?)", 
