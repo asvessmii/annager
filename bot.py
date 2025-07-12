@@ -138,18 +138,34 @@ async def admin_users(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
     query = update.callback_query
     await query.answer()
     users = db.get_all_users()
-    response_text = "Список пользователей и их результаты тестов:\n\n"
+    response_text = "👥 Список пользователей и их результаты тестов:\n\n"
     if users:
-        for user_id, current_question, score in users:
-            result_text = "Тест не пройден"
-            if current_question == len(QUESTIONS): # Check if all questions were answered
-                for min_score, max_score, text in RESULTS:
-                    if min_score <= score <= max_score:
-                        result_text = text
-                        break
-            response_text += f"ID пользователя: {user_id}, Баллы: {score}, Результат: {result_text}\n"
+        for user_id, current_question, score, completed, last_result in users:
+            if completed:
+                status = "✅ Тест пройден"
+                result_text = last_result if last_result else "Результат не сохранен"
+                progress = f"Баллы: {score}"
+            elif current_question > 0:
+                status = f"📝 В процессе (вопрос {current_question}/{len(QUESTIONS)})"
+                result_text = "Тест не завершен"
+                progress = f"Текущие баллы: {score}"
+            else:
+                status = "❌ Тест не начат"
+                result_text = "Тест не пройден"
+                progress = "Баллы: 0"
+            
+            response_text += f"👤 ID: {user_id}\n"
+            response_text += f"📊 Статус: {status}\n"
+            response_text += f"🎯 {progress}\n"
+            response_text += f"📋 Результат: {result_text}\n"
+            response_text += "─" * 30 + "\n\n"
     else:
         response_text += "Пользователи не найдены."
+    
+    # Split message if it's too long
+    if len(response_text) > 4000:
+        response_text = response_text[:4000] + "\n\n... (список обрезан)"
+    
     await query.edit_message_text(response_text)
     return ADMIN_MENU
 
