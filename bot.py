@@ -181,15 +181,23 @@ async def admin_messages(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     await query.answer()
     messages = db.get_all_messages()
     keyboard = []
-    response_text = "Список сообщений:\n\n"
+    response_text = "💬 Управление сообщениями:\n\n"
+    
     if messages:
-        for msg_id, text, _ in messages:
-            response_text += f"ID: {msg_id}, Текст: {text[:50]}...\n"
-            keyboard.append([InlineKeyboardButton(f"Редактировать {msg_id}", callback_data=f"admin_edit_message_{msg_id}")])
+        for msg_id, text, photo_path in messages:
+            status = "📷 С фото" if photo_path else "📝 Текст"
+            response_text += f"🆔 {msg_id} | {status}\n"
+            response_text += f"📄 {text[:60]}...\n"
+            response_text += "─" * 25 + "\n"
+            keyboard.append([InlineKeyboardButton(f"✏️ Редактировать {msg_id}", callback_data=f"admin_edit_message_{msg_id}")])
+            keyboard.append([InlineKeyboardButton(f"🗑️ Удалить {msg_id}", callback_data=f"admin_delete_message_{msg_id}")])
     else:
-        response_text += "Сообщения не найдены."
-    keyboard.append([InlineKeyboardButton("Добавить сообщение", callback_data="admin_add_message")])
+        response_text += "Сообщения не найдены.\n"
+    
+    keyboard.append([InlineKeyboardButton("➕ Добавить сообщение", callback_data="admin_add_message")])
+    keyboard.append([InlineKeyboardButton("⬅️ Назад в меню", callback_data="admin_back_to_menu")])
     reply_markup = InlineKeyboardMarkup(keyboard)
+    
     await query.edit_message_text(response_text, reply_markup=reply_markup)
     return ADMIN_MENU
 
