@@ -65,11 +65,11 @@ QUESTIONS = {
 }
 
 RESULTS = [
-    (100, 130, "60%: “Кето тебе подойдёт ! Оно будет тебе полезно для профилактики гормональных сбоев и стабилизации веса."),
-    (131, 170, "70%: “Есть хорошие показания, самое главное - мягкий вход . Лови рацион на 3 дня ! |"),
-    (171, 200, "80%: “Кето отлично подойдёт — твои симптомы указывают на инсулинорезистентность и дефицит жиров.”"),
-    (201, 230, "90%: “Тебе прямой путь на женское кето. Организм просит перезапуска.”"),
-    (231, float("inf"), "100%: “У тебя почти классическая картина ‘гормональной усталости’. Кето + интервальное питание = 🔥")
+    (100, 130, "60%: "Кето тебе подойдёт ! Оно будет тебе полезно для профилактики гормональных сбоев и стабилизации веса."),
+    (131, 170, "70%: "Есть хорошие показания, самое главное - мягкий вход . Лови рацион на 3 дня ! |"),
+    (171, 200, "80%: "Кето отлично подойдёт — твои симптомы указывают на инсулинорезистентность и дефицит жиров.""),
+    (201, 230, "90%: "Тебе прямой путь на женское кето. Организм просит перезапуска.""),
+    (231, float("inf"), "100%: "У тебя почти классическая картина 'гормональной усталости'. Кето + интервальное питание = 🔥")
 ]
 
 # States for admin panel conversation
@@ -215,30 +215,79 @@ async def admin_edit_message(update: Update, context: ContextTypes.DEFAULT_TYPE)
         await query.edit_message_text("Сообщение не найдено.")
         return ADMIN_MENU
 
-async def receive_edited_message_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    message_id = context.user_data.get("editing_message_id")
-    if message_id:
-        new_text = update.message.text
-        db.update_message_text(message_id, new_text)
-        del context.user_data["editing_message_id"]
-        await update.message.reply_text(f"Текст сообщения {message_id} обновлен.")
-        # Go back to admin messages menu
-        messages = db.get_all_messages()
-        keyboard = []
-        response_text = "Список сообщений:\n\n"
-        if messages:
-            for msg_id, text, _ in messages:
-                response_text += f"ID: {msg_id}, Текст: {text[:50]}...\n"
-                keyboard.append([InlineKeyboardButton(f"Редактировать {msg_id}", callback_data=f"admin_edit_message_{msg_id}")])
-        else:
-            response_text += "Сообщения не найдены."
-        keyboard.append([InlineKeyboardButton("Добавить сообщение", callback_data="admin_add_message")])
-        reply_markup = InlineKeyboardMarkup(keyboard)
-        await update.message.reply_text(response_text, reply_markup=reply_markup)
-        return ADMIN_MENU
+async def admin_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    """Manage buttons admin panel"""
+    query = update.callback_query
+    await query.answer()
+    buttons = db.get_all_buttons()
+    keyboard = []
+    response_text = "🔘 Управление кнопками:\n\n"
+    
+    if buttons:
+        for button_id, message_id, text, url, callback_data, message_text in buttons:
+            btn_type = "🔗 URL" if url else "⚡ Callback"
+            response_text += f"🆔 {button_id} | Сообщение: {message_id}\n"
+            response_text += f"📝 Текст: {text}\n"
+            response_text += f"🔧 Тип: {btn_type}\n"
+            if url:
+                response_text += f"🔗 URL: {url[:50]}...\n"
+            if callback_data:
+                response_text += f"⚡ Callback: {callback_data}\n"
+            response_text += "─" * 30 + "\n"
+            
+            keyboard.append([InlineKeyboardButton(f"✏️ Редактировать кнопку {button_id}", callback_data=f"admin_edit_button_{button_id}")])
+            keyboard.append([InlineKeyboardButton(f"🗑️ Удалить кнопку {button_id}", callback_data=f"admin_delete_button_{button_id}")])
     else:
-        await update.message.reply_text("Ошибка: не удалось определить сообщение для редактирования.")
-        return ADMIN_MENU
+        response_text += "Кнопки не найдены.\n"
+    
+    keyboard.append([InlineKeyboardButton("➕ Добавить кнопку", callback_data="admin_add_button")])
+    keyboard.append([InlineKeyboardButton("⬅️ Назад в меню", callback_data="admin_back_to_menu")])
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    await query.edit_message_text(response_text, reply_markup=reply_markup)
+    return ADMIN_MENU
+
+async def admin_tests(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    """Manage tests admin panel"""
+    query = update.callback_query
+    await query.answer()
+    
+    response_text = "📝 Управление тестами:\n\n"
+    response_text += f"📊 Всего вопросов: {len(QUESTIONS)}\n\n"
+    
+    keyboard = []
+    for q_num, question_data in QUESTIONS.items():
+        response_text += f"❓ Вопрос {q_num}: {question_data['text'][:40]}...\n"
+        response_text += f"🔢 Вариантов ответов: {len(question_data['options'])}\n"
+        response_text += "─" * 25 + "\n"
+        keyboard.append([InlineKeyboardButton(f"✏️ Редактировать вопрос {q_num}", callback_data=f"admin_edit_question_{q_num}")])
+    
+    response_text += "\n📋 Результаты тестов:\n"
+    for i, (min_score, max_score, text) in enumerate(RESULTS):
+        response_text += f"🎯 {min_score}-{max_score} баллов: {text[:40]}...\n"
+    
+    keyboard.append([InlineKeyboardButton("⬅️ Назад в меню", callback_data="admin_back_to_menu")])
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    await query.edit_message_text(response_text, reply_markup=reply_markup)
+    return ADMIN_MENU
+
+async def admin_back_to_menu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    """Return to main admin menu"""
+    query = update.callback_query
+    await query.answer()
+    
+    keyboard = [
+        [InlineKeyboardButton("👥 Пользователи", callback_data="admin_users")],
+        [InlineKeyboardButton("💬 Сообщения", callback_data="admin_messages")],
+        [InlineKeyboardButton("🔘 Кнопки", callback_data="admin_buttons")],
+        [InlineKeyboardButton("📝 Тесты", callback_data="admin_tests")]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    welcome_text = "🔧 Админ-панель\n\nВыберите раздел для управления:"
+    
+    await query.edit_message_text(welcome_text, reply_markup=reply_markup)
+    return ADMIN_MENU
 
 async def start_test(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Starts the test."""
@@ -312,8 +361,10 @@ def main() -> None:
             ADMIN_MENU: [
                 CallbackQueryHandler(admin_users, pattern="^admin_users$"),
                 CallbackQueryHandler(admin_messages, pattern="^admin_messages$"),
+                CallbackQueryHandler(admin_buttons, pattern="^admin_buttons$"),
+                CallbackQueryHandler(admin_tests, pattern="^admin_tests$"),
+                CallbackQueryHandler(admin_back_to_menu, pattern="^admin_back_to_menu$"),
             ],
-            EDIT_MESSAGE_TEXT: [MessageHandler(filters.TEXT & ~filters.COMMAND, receive_edited_message_text)],
         },
         fallbacks=[CommandHandler("admin", admin_panel)], # Allow re-entering admin panel
     )
@@ -331,5 +382,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
-
