@@ -173,6 +173,69 @@ def get_all_messages():
     conn.close()
     return messages
 
+def clean_duplicate_buttons():
+    """Remove duplicate buttons based on message_id, text, url, and callback_data"""
+    conn = sqlite3.connect(DATABASE_NAME)
+    cursor = conn.cursor()
+    
+    # Find duplicates and keep only the first occurrence
+    cursor.execute("""
+        DELETE FROM buttons 
+        WHERE button_id NOT IN (
+            SELECT MIN(button_id) 
+            FROM buttons 
+            GROUP BY message_id, text, COALESCE(url, ''), COALESCE(callback_data, '')
+        )
+    """)
+    
+    deleted_count = cursor.rowcount
+    conn.commit()
+    conn.close()
+    return deleted_count
+
+def get_all_buttons():
+    """Get all buttons with their message information"""
+    conn = sqlite3.connect(DATABASE_NAME)
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT b.button_id, b.message_id, b.text, b.url, b.callback_data, m.text as message_text
+        FROM buttons b
+        LEFT JOIN messages m ON b.message_id = m.message_id
+        ORDER BY b.message_id, b.button_id
+    """)
+    buttons = cursor.fetchall()
+    conn.close()
+    return buttons
+
+def add_message(message_id, text, photo_path=None):
+    """Add a new message"""
+    conn = sqlite3.connect(DATABASE_NAME)
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO messages (message_id, text, photo_path) VALUES (?, ?, ?)", 
+                   (message_id, text, photo_path))
+    conn.commit()
+    conn.close()
+
+def delete_message(message_id):
+    """Delete a message and all its buttons"""
+    conn = sqlite3.connect(DATABASE_NAME)
+    cursor = conn.cursor()
+    # Delete associated buttons first
+    cursor.execute("DELETE FROM buttons WHERE message_id = ?", (message_id,))
+    # Delete the message
+    cursor.execute("DELETE FROM messages WHERE message_id = ?", (message_id,))
+    conn.commit()
+    conn.close()
+
+def get_button_by_id(button_id):
+    """Get button details by ID"""
+    conn = sqlite3.connect(DATABASE_NAME)
+    cursor = conn.cursor()
+    cursor.execute("SELECT button_id, message_id, text, url, callback_data FROM buttons WHERE button_id = ?", (button_id,))
+    button = cursor.fetchone()
+    conn.close()
+    return button
+
 
 
 
