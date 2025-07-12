@@ -267,7 +267,8 @@ async def send_result(message, context: ContextTypes.DEFAULT_TYPE, user_id: int)
             break
     
     await message.reply_text(f"Ваш результат: {final_score} баллов.\n\n{result_message}")
-    db.reset_user_progress(user_id) # Reset progress after test completion
+    # Mark test as completed instead of resetting progress
+    db.complete_user_test(user_id, final_score, result_message)
 
 def main() -> None:
     """Start the bot."""
