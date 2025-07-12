@@ -83,7 +83,7 @@ def populate_initial_messages():
 def get_user_data(user_id):
     conn = sqlite3.connect(DATABASE_NAME)
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM users WHERE id = ?", (user_id,))
+    cursor.execute("SELECT id, current_question, score, completed, last_result FROM users WHERE id = ?", (user_id,))
     user_data = cursor.fetchone()
     conn.close()
     return user_data
