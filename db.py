@@ -109,6 +109,15 @@ def reset_user_progress(user_id):
     conn.commit()
     conn.close()
 
+def complete_user_test(user_id, final_score, result_text):
+    """Mark user test as completed with final score and result"""
+    conn = sqlite3.connect(DATABASE_NAME)
+    cursor = conn.cursor()
+    cursor.execute("UPDATE users SET completed = 1, score = ?, last_result = ?, current_question = 0 WHERE id = ?", 
+                   (final_score, result_text, user_id))
+    conn.commit()
+    conn.close()
+
 def get_message(message_id):
     conn = sqlite3.connect(DATABASE_NAME)
     cursor = conn.cursor()
