@@ -405,6 +405,7 @@ def main() -> None:
                 CallbackQueryHandler(admin_tests, pattern="^admin_tests$"),
                 CallbackQueryHandler(admin_back_to_menu, pattern="^admin_back_to_menu$"),
             ],
+            EDIT_MESSAGE_TEXT: [MessageHandler(filters.TEXT & ~filters.COMMAND, receive_edited_message_text)],
         },
         fallbacks=[CommandHandler("admin", admin_panel)], # Allow re-entering admin panel
     )
