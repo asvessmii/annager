@@ -37,6 +37,12 @@ def populate_initial_messages():
     conn = sqlite3.connect(DATABASE_NAME)
     cursor = conn.cursor()
 
+    # Check if data already exists
+    cursor.execute("SELECT COUNT(*) FROM messages")
+    if cursor.fetchone()[0] > 0:
+        conn.close()
+        return
+
     messages_data = [
         ("message_1", "Привет! Ты попала в мой бот\n\nМеня зовут Анна Герц\n\nЯ натуропат, помогаю тысячам женщин становиться здоровыми и стройными и влюбляться в свое тело вновь, и вновь.\n\nВ этом боте будет много полезных гайдов и уроков 😍\n\nПрисоединяйся👍", "/home/ubuntu/upload/image.png"),
         ("message_2", "Для начала тебе нужно подписаться на мой телеграм-канал, в котором я делюсь очень полезной информацией о чистоте питания, тела и сознания. Показываю реальную жизнь без перекосов, категоричности и вылизанной картинки идеальной жизни !\n\nГде и ты, и я имеем право на ошибки в питании, в спорте, в мыслях, в отношениях - но в этой неидеальности и есть жизнь👍\n\nА также ты найдешь там полезные посты и подкасты про питание и не только — материал, который не знает гугл, так как это мой опыт и опыт 1000 женщин, прошедших путь очищения со мной .\n\nПодписывайся и жми кнопку ниже ⬇️", None),
@@ -52,10 +58,10 @@ def populate_initial_messages():
     ]
 
     for msg_id, text, photo_path in messages_data:
-        cursor.execute("INSERT OR IGNORE INTO messages (message_id, text, photo_path) VALUES (?, ?, ?)", (msg_id, text, photo_path))
+        cursor.execute("INSERT INTO messages (message_id, text, photo_path) VALUES (?, ?, ?)", (msg_id, text, photo_path))
     
     for msg_id, text, url, callback_data in buttons_data:
-        cursor.execute("INSERT OR IGNORE INTO buttons (message_id, text, url, callback_data) VALUES (?, ?, ?, ?)", (msg_id, text, url, callback_data))
+        cursor.execute("INSERT INTO buttons (message_id, text, url, callback_data) VALUES (?, ?, ?, ?)", (msg_id, text, url, callback_data))
     
     conn.commit()
     conn.close()
