@@ -128,14 +128,17 @@ async def admin_panel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
     """Handles the /admin command."""
     if update.effective_user.id == ADMIN_ID:
         keyboard = [
-            [InlineKeyboardButton("Пользователи", callback_data="admin_users")],
-            [InlineKeyboardButton("Сообщения", callback_data="admin_messages")]
+            [InlineKeyboardButton("👥 Пользователи", callback_data="admin_users")],
+            [InlineKeyboardButton("💬 Сообщения", callback_data="admin_messages")],
+            [InlineKeyboardButton("🔘 Кнопки", callback_data="admin_buttons")],
+            [InlineKeyboardButton("📝 Тесты", callback_data="admin_tests")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
-        await update.message.reply_text("Добро пожаловать в админ-панель! Выберите действие:", reply_markup=reply_markup)
+        welcome_text = "🔧 Добро пожаловать в админ-панель!\n\nВыберите раздел для управления:"
+        await update.message.reply_text(welcome_text, reply_markup=reply_markup)
         return ADMIN_MENU
     else:
-        await update.message.reply_text("У вас нет доступа к админ-панели.")
+        await update.message.reply_text("❌ У вас нет доступа к админ-панели.")
         return ConversationHandler.END
 
 async def admin_users(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
