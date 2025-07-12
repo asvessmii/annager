@@ -91,7 +91,7 @@ def get_user_data(user_id):
 def create_user(user_id):
     conn = sqlite3.connect(DATABASE_NAME)
     cursor = conn.cursor()
-    cursor.execute("INSERT OR IGNORE INTO users (id) VALUES (?) ", (user_id,))
+    cursor.execute("INSERT OR IGNORE INTO users (id, current_question, score, completed, last_result) VALUES (?, 0, 0, 0, NULL)", (user_id,))
     conn.commit()
     conn.close()
 
