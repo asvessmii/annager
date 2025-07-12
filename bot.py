@@ -209,11 +209,51 @@ async def admin_edit_message(update: Update, context: ContextTypes.DEFAULT_TYPE)
     message_data = db.get_message(message_id)
     if message_data:
         text, _ = message_data
-        await query.edit_message_text(f"Введите новый текст для сообщения {message_id}:\n\nТекущий текст:\n{text}")
+        await query.edit_message_text(f"✏️ Редактирование сообщения {message_id}\n\nТекущий текст:\n{text}\n\n📝 Введите новый текст:")
         return EDIT_MESSAGE_TEXT
     else:
-        await query.edit_message_text("Сообщение не найдено.")
+        await query.edit_message_text("❌ Сообщение не найдено.")
         return ADMIN_MENU
+
+async def receive_edited_message_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    """Handle edited message text"""
+    message_id = context.user_data.get("editing_message_id")
+    if message_id:
+        new_text = update.message.text
+        db.update_message_text(message_id, new_text)
+        del context.user_data["editing_message_id"]
+        
+        await update.message.reply_text(f"✅ Текст сообщения {message_id} обновлен!")
+        
+        # Return to messages menu
+        return await show_messages_menu(update.message)
+    else:
+        await update.message.reply_text("❌ Ошибка: не удалось определить сообщение для редактирования.")
+        return ADMIN_MENU
+
+async def show_messages_menu(message):
+    """Helper function to show messages menu"""
+    messages = db.get_all_messages()
+    keyboard = []
+    response_text = "💬 Управление сообщениями:\n\n"
+    
+    if messages:
+        for msg_id, text, photo_path in messages:
+            status = "📷 С фото" if photo_path else "📝 Текст"
+            response_text += f"🆔 {msg_id} | {status}\n"
+            response_text += f"📄 {text[:60]}...\n"
+            response_text += "─" * 25 + "\n"
+            keyboard.append([InlineKeyboardButton(f"✏️ Редактировать {msg_id}", callback_data=f"admin_edit_message_{msg_id}")])
+            keyboard.append([InlineKeyboardButton(f"🗑️ Удалить {msg_id}", callback_data=f"admin_delete_message_{msg_id}")])
+    else:
+        response_text += "Сообщения не найдены.\n"
+    
+    keyboard.append([InlineKeyboardButton("➕ Добавить сообщение", callback_data="admin_add_message")])
+    keyboard.append([InlineKeyboardButton("⬅️ Назад в меню", callback_data="admin_back_to_menu")])
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    await message.reply_text(response_text, reply_markup=reply_markup)
+    return ADMIN_MENU
 
 async def admin_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Manage buttons admin panel"""
