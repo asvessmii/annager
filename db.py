@@ -9,7 +9,9 @@ def init_db():
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY,
             current_question INTEGER DEFAULT 0,
-            score INTEGER DEFAULT 0
+            score INTEGER DEFAULT 0,
+            completed INTEGER DEFAULT 0,
+            last_result TEXT
         )
     """)
     cursor.execute("""
@@ -29,6 +31,18 @@ def init_db():
             FOREIGN KEY (message_id) REFERENCES messages (message_id)
         )
     """)
+    
+    # Add new columns if they don't exist (for existing databases)
+    try:
+        cursor.execute("ALTER TABLE users ADD COLUMN completed INTEGER DEFAULT 0")
+    except sqlite3.OperationalError:
+        pass  # Column already exists
+    
+    try:
+        cursor.execute("ALTER TABLE users ADD COLUMN last_result TEXT")
+    except sqlite3.OperationalError:
+        pass  # Column already exists
+    
     conn.commit()
     conn.close()
     populate_initial_messages()
