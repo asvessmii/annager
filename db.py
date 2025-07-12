@@ -128,7 +128,7 @@ def get_buttons_for_message(message_id):
 def get_all_users():
     conn = sqlite3.connect(DATABASE_NAME)
     cursor = conn.cursor()
-    cursor.execute("SELECT id, current_question, score FROM users")
+    cursor.execute("SELECT id, current_question, score, completed, last_result FROM users")
     users = cursor.fetchall()
     conn.close()
     return users
